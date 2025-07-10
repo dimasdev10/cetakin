@@ -3,14 +3,14 @@ import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { NextAuthConfig } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { SignInSchema } from "@/lib/validations/auth";
+import { signInSchema } from "@/lib/validations/auth";
 import Credentials from "next-auth/providers/credentials";
 
 export default {
   providers: [
     Credentials({
       async authorize(credentials) {
-        const validatedFields = SignInSchema.safeParse(credentials);
+        const validatedFields = signInSchema.safeParse(credentials);
 
         if (validatedFields.success) {
           const { email, password } = validatedFields.data;
