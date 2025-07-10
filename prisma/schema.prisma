@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  image     String?
+  phone     String?
+  address   String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders   Order[]
+}
+
+model Package {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  price       Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  requiredFields PackageField[]
+  orders         Order[]
+}
+
+enum FieldType {
+  TEXT
+  EMAIL
+  PHONE
+  FILE
+  SELECT
+  TEXTAREA
+  DATE
+}
+
+model PackageField {
+  id          String    @id @default(cuid())
+  fieldName   String
+  fieldLabel  String
+  fieldType   FieldType
+  isRequired  Boolean   @default(true)
+  options     String[]  @default([])
+  order       Int
+  createdAt   DateTime  @default(now())
+
+  packageId   String
+  package     Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  packageId     String
+  status        OrderStatus @default(PENDING)
+  totalAmount   Int
+  paymentId     String?
+  paymentStatus String?
+  formData      Json
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  userId        String
+  user          User    @relation(fields: [userId], references: [id])
+
+  package       Package @relation(fields: [packageId], references: [id])
+  files         OrderFile[]
+}
+
+model OrderFile {
+  id            String @id @default(cuid())
+  orderId       String
+  fieldName     String
+  fileName      String
+  fileUrl       String
+  fileSize      Int
+  createdAt     DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
