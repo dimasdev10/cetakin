@@ -30,21 +30,21 @@ export const columns: ColumnDef<PackageTable>[] = [
           src={row.original.image}
           alt={row.original.name}
           className="h-10 w-10 rounde-md object-cover"
+          width={40}
+          height={40}
         />
       );
     },
   },
   {
     accessorKey: "name",
-    header: "Nama",
+    header: "Nama Paket",
   },
   {
     accessorKey: "price",
     header: "Harga",
     cell: ({ row }) => {
-      return (
-        <span className="font-semibold">{formatPrice(row.original.price)}</span>
-      );
+      return <span>{formatPrice(row.original.price)}</span>;
     },
   },
   {
