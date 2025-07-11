@@ -14,7 +14,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+import { cn } from "@/lib/utils";
 import { signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 interface NavbarItemProps {
   image?: string;
@@ -33,13 +35,22 @@ export default function DashboardNavItem({
   name,
   email,
 }: NavbarItemProps) {
+  const pathname = usePathname();
+
+  const isActive = (path: string) => {
+    return pathname === path;
+  };
+
   return (
     <nav className="flex items-center gap-8">
       {navLinks.map((link) => (
         <Link
           key={link.path}
           href={link.path}
-          className="text-sm transition-colors text-secondary-foreground/80 hover:text-primary cursor-pointer"
+          className={cn(
+            "text-sm transition-colors text-secondary-foreground/80 hover:text-primary cursor-pointer",
+            isActive(link.path) && "text-primary bg-transparent"
+          )}
         >
           {link.name}
         </Link>

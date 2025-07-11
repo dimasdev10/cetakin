@@ -3,7 +3,7 @@ import { columns } from "@/components/tables/columns/user-columns";
 
 import { getAllUserTable } from "@/actions/user";
 
-const DashboardServicePage = async () => {
+const DashboardUsersPage = async () => {
   const users = await getAllUserTable();
 
   return (
@@ -24,4 +24,4 @@ const DashboardServicePage = async () => {
   );
 };
 
-export default DashboardServicePage;
+export default DashboardUsersPage;

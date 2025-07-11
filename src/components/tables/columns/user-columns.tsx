@@ -10,7 +10,7 @@ export type UserTable = {
   email: string;
   phone?: string;
   createdAt: string;
-  onDelete?: (idService: string) => void;
+  onDelete?: (id: string) => void;
 };
 
 export const columns: ColumnDef<UserTable>[] = [
