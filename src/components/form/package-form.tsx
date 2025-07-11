@@ -51,16 +51,15 @@ export function PackageForm({ initialData, mode }: PackageFormProps) {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const { startUpload } = useUploadThing("packageImage", {
-    // Uncomment kode jika ingin menampilkan pesan berhasil upload gambar
-    // onClientUploadComplete: (res) => {
-    //   if (res && res[0]) {
-    //     toast.success("Gambar berhasil diupload");
-    //   }
-    // },
+    onClientUploadComplete: (res) => {
+      if (res && res[0]) {
+        console.log("UploadThing client upload complete:", res[0].url);
+      }
+    },
     onUploadError: (error) => {
       console.error("Upload error:", error);
       setIsUploadingImage(false);
-      toast.error("Gagal mengupload gambar", {
+      toast.error("Upload gagal", {
         description:
           error.message || "Terjadi kesalahan saat mengupload gambar.",
       });
@@ -74,7 +73,7 @@ export function PackageForm({ initialData, mode }: PackageFormProps) {
     resolver: zodResolver(packageFormSchema),
     defaultValues: {
       name: initialData?.name || "",
-      image: initialData?.image || "",
+      image: initialData?.image || "", // Default value akan kosong jika mode create dan tidak ada initialData
       description: initialData?.description || "",
       price: initialData?.price ? Number(initialData.price) : 0,
       requiredFields:
@@ -93,33 +92,22 @@ export function PackageForm({ initialData, mode }: PackageFormProps) {
   const handleImageFileSelect = (file: File | null) => {
     setSelectedImageFile(file);
     if (file) {
-      // Set nilai sementara untuk field 'image' agar dapat melewati validasi Zod min(1)
-      // Validasi akan dipicu, tetapi hanya setelah memilih file
+      // Jika file baru dipilih, set nilai sementara untuk field 'image'
+      // agar lolos validasi Zod min(1) dan hapus error yang mungkin ada.
       form.setValue("image", "__FILE_PENDING_UPLOAD__", {
         shouldValidate: true,
       });
-      // Hapus error Zod yang mungkin ada pada field 'image'
       form.clearErrors("image");
     } else {
-      // Jika file dihapus:
-      if (mode === "create" && !initialData?.image) {
-        // Dalam mode create dan tidak ada gambar awal, set ke string kosong agar Zod memicu validasi 'min(1)' lagi.
-        form.setValue("image", "", { shouldValidate: true });
-      } else if (mode === "edit" && initialData?.image) {
-        // Dalam mode edit dan ada gambar awal, kembalikan ke URL gambar awal
-        form.setValue("image", initialData.image, { shouldValidate: true });
-      } else {
-        // Fallback jika tidak ada gambar awal dan file dihapus
-        form.setValue("image", "", { shouldValidate: true });
-      }
+      // Jika tidak ada file yang dipilih, set nilai 'image' ke string kosong
+      form.setValue("image", "", { shouldValidate: true });
     }
   };
 
   const onSubmit = async (data: PackageFormInput) => {
     startTransition(async () => {
       try {
-        // Mulai dengan value 'image' yang ada di form (bisa placeholder atau URL lama)
-        let finalImageUrl = data.image;
+        let finalImageUrl = data.image; // Mulai dengan nilai 'image' yang ada di form (bisa placeholder atau URL lama)
 
         // Jika ada file baru yang dipilih untuk diupload
         if (selectedImageFile) {
@@ -128,18 +116,17 @@ export function PackageForm({ initialData, mode }: PackageFormProps) {
 
           try {
             const uploadResult = await startUpload([selectedImageFile]);
-            // Jika upload berhasil, update value dengan URL baru dari UploadThing
             if (uploadResult && uploadResult[0]) {
-              finalImageUrl = uploadResult[0].url;
+              finalImageUrl = uploadResult[0].url; // Update dengan URL baru dari UploadThing
             } else {
-              throw new Error("Gagal mendapatkan URL gambar setelah upload.");
+              throw new Error("Upload gagal");
             }
           } catch (uploadError: unknown) {
             setIsUploadingImage(false);
             const errorMessage =
               uploadError instanceof Error
                 ? uploadError.message
-                : "Terjadi kesalahan!";
+                : "Terjadi kesalahan tidak dikenal.";
             toast.error("Upload gambar gagal", {
               description: errorMessage,
             });
@@ -147,8 +134,18 @@ export function PackageForm({ initialData, mode }: PackageFormProps) {
               type: "manual",
               message: "Upload gambar gagal.",
             });
-            return;
+            return; // Hentikan proses submit
           }
+        } else if (mode === "edit" && initialData?.image && data.image === "") {
+          // Kasus: mode edit, ada gambar awal, tapi pengguna menghapusnya dan tidak mengupload yang baru
+          // finalImageUrl sudah "" dari handleImageFileSelect
+        } else if (
+          mode === "edit" &&
+          initialData?.image &&
+          data.image === initialData.image
+        ) {
+          // Kasus: mode edit, ada gambar awal, dan pengguna tidak mengubahnya
+          finalImageUrl = initialData.image;
         }
 
         // Pastikan finalImageUrl ada dan bukan placeholder sebelum mengirim ke server action
@@ -164,15 +161,14 @@ export function PackageForm({ initialData, mode }: PackageFormProps) {
         }
 
         // Update nilai 'image' di form dengan URL final sebelum dikirim ke server action
-        form.setValue("image", finalImageUrl, { shouldValidate: false });
+        form.setValue("image", finalImageUrl, { shouldValidate: false }); // Jangan validasi lagi, sudah divalidasi di sini
+
         let result;
 
-        // Jika mode adalah "create", kirim data form yang sudah diupdate
         if (mode === "create") {
-          result = await createPackage(form.getValues());
-          // Jika mode adalah "edit", kirim data form yang sudah diupdate
+          result = await createPackage(form.getValues()); // Kirim data form yang sudah diupdate
         } else if (initialData?.id) {
-          result = await updatePackage(initialData.id, form.getValues());
+          result = await updatePackage(initialData.id, form.getValues()); // Kirim data form yang sudah diupdate
         }
 
         if (result?.error) {
@@ -187,9 +183,9 @@ export function PackageForm({ initialData, mode }: PackageFormProps) {
             ? "Paket berhasil dibuat"
             : "Paket berhasil diperbarui",
           {
-            description: `Paket "${data.name}" telah berhasil ${
-              mode === "create" ? "ditambahkan" : "diperbarui"
-            } ke dalam sistem.`,
+            description: `Paket "${data.name}" telah ${
+              mode === "create" ? "dibuat" : "diperbarui"
+            } dengan sukses.`,
           }
         );
 
@@ -207,8 +203,7 @@ export function PackageForm({ initialData, mode }: PackageFormProps) {
   };
 
   const isSubmitting = isPending || isUploadingImage;
-
-  // Cek apakah ada URL gambar yang sudah ada atau ada file yang dipilih untuk preview
+  // Cek apakah ada URL gambar yang sudah ada ATAU ada file yang dipilih untuk preview
   const hasImageOrFile = !!form.watch("image") || !!selectedImageFile;
 
   return (
@@ -312,14 +307,14 @@ export function PackageForm({ initialData, mode }: PackageFormProps) {
                   <FormField
                     control={form.control}
                     name="image"
-                    render={() => (
+                    render={({ field }) => (
                       <FormItem className="h-full">
                         <FormControl>
                           <UploadDropzone
                             onFileSelect={handleImageFileSelect}
                             accept="image"
-                            maxSize={4 * 1024 * 1024} // 4MB
-                            currentFileUrl={initialData?.image}
+                            maxSize={4 * 1024 * 1024} // 4MB for images
+                            currentFileUrl={field.value}
                             currentPreviewFile={selectedImageFile}
                             disabled={isSubmitting}
                             isUploading={isUploadingImage}

@@ -59,11 +59,7 @@ export default function PackageColumnActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            asChild
-            onClick={() => setOpen(true)}
-            className="cursor-pointer"
-          >
+          <DropdownMenuItem asChild className="cursor-pointer">
             <Link href={`/dashboard/packages/${id}/edit`}>
               <Pencil className="h-4 w-4" />
               Edit

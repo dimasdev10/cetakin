@@ -47,6 +47,27 @@ export async function getAllPackageTable(): Promise<PackageTable[]> {
   }
 }
 
+export async function getPackage(id: string) {
+  try {
+    const packageData = await prisma.package.findUnique({
+      where: {
+        id,
+        deletedAt: null,
+      },
+      include: {
+        requiredFields: {
+          orderBy: { order: "asc" },
+        },
+      },
+    });
+
+    return packageData;
+  } catch (error) {
+    console.error("Error fetching package:", error);
+    return null;
+  }
+}
+
 export async function deletePackage(
   id: string
 ): Promise<{ success?: string; error?: string }> {

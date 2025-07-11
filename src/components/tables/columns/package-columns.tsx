@@ -29,7 +29,7 @@ export const columns: ColumnDef<PackageTable>[] = [
         <Image
           src={row.original.image}
           alt={row.original.name}
-          className="h-10 w-10 rounde-md object-cover"
+          className="h-10 w-10 rounded-sm object-cover"
           width={40}
           height={40}
         />

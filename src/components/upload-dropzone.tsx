@@ -11,7 +11,6 @@ import {
   UploadCloud,
   File,
   X,
-  CheckCircle,
   AlertCircle,
   Loader2,
   ImageIcon,
@@ -144,7 +143,7 @@ export function UploadDropzone({
   const { getRootProps, getInputProps, isDragActive, isDragReject } =
     useDropzone({
       onDrop: handleFileDropOrSelect,
-      accept: getAcceptedFileTypes(), // Ini sekarang memiliki tipe yang jelas
+      accept: getAcceptedFileTypes(),
       maxFiles: 1,
       disabled: disabled || isUploading,
       maxSize,
@@ -161,6 +160,11 @@ export function UploadDropzone({
 
   const getFileIcon = (file: FileWithPreview | string) => {
     if (typeof file === "string") {
+      // Untuk URL, kita asumsikan jika accept adalah 'image', maka itu gambar.
+      // Jika tidak, kita cek ekstensi (fallback)
+      if (accept === "image") {
+        return <ImageIcon className="h-5 w-5" />;
+      }
       return file.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
         <ImageIcon className="h-5 w-5" />
       ) : (
@@ -198,70 +202,33 @@ export function UploadDropzone({
     );
   };
 
-  // State 1: File sudah diupload dan tersimpan (dari currentFileUrl)
-  if (currentFileUrl && !internalPreviewFile && !isUploading) {
-    const isImage = currentFileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+  // State 4: Error saat validasi file (sebelum upload)
+  if (error) {
     return (
-      <Card className="border-2 border-green-200 bg-green-50">
+      <Card className="border-2 border-red-200 bg-red-50">
         <CardContent className="p-4">
-          {isImage ? (
-            <div className="space-y-3">
-              <div className="relative aspect-video rounded-lg overflow-hidden bg-white">
-                <Image
-                  src={currentFileUrl || "/placeholder.svg"}
-                  alt="Uploaded file"
-                  className="w-full h-full object-cover"
-                  fill
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      "/placeholder.svg?height=200&width=300";
-                  }}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span className="text-sm font-medium text-green-700">
-                    File tersimpan
-                  </span>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={removeFile}
-                  disabled={disabled}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+              <div>
+                <p className="text-sm font-medium text-red-700">
+                  File tidak valid
+                </p>
+                <p className="text-xs text-red-600">{error}</p>
               </div>
             </div>
-          ) : (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <File className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-green-700">
-                    File tersimpan
-                  </p>
-                  <p className="text-xs text-green-600">
-                    {getFileName(currentFileUrl)}
-                  </p>
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={removeFile}
-                disabled={disabled}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setError(null);
+                onFileSelect(null); // Reset file selection
+              }}
+            >
+              Pilih Ulang
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
@@ -317,7 +284,8 @@ export function UploadDropzone({
   }
 
   // State 3: File dipilih dan di-preview (menampilkan internalPreviewFile, tapi belum diupload)
-  if (internalPreviewFile && !isUploading) {
+  // Ini harus diprioritaskan jika ada file baru yang dipilih
+  if (internalPreviewFile) {
     const isImage = internalPreviewFile.type.startsWith("image/");
     return (
       <Card className="border-2 border-amber-200 bg-amber-50">
@@ -375,33 +343,94 @@ export function UploadDropzone({
     );
   }
 
-  // State 4: Error saat validasi file (sebelum upload)
-  if (error) {
+  // State 1: File sudah diupload dan tersimpan (dari currentFileUrl)
+  if (currentFileUrl && currentFileUrl !== "__FILE_PENDING_UPLOAD__") {
+    const isImage = accept === "image";
+
+    const isImageFromUploadThingUrl = !currentFileUrl.match(
+      /\.(jpg|jpeg|png|gif|webp)$/i
+    );
+
     return (
-      <Card className="border-2 border-red-200 bg-red-50">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <AlertCircle className="h-5 w-5 text-red-600" />
-              <div>
-                <p className="text-sm font-medium text-red-700">
-                  File tidak valid
-                </p>
-                <p className="text-xs text-red-600">{error}</p>
+      <Card
+        className={cn(
+          "border-2",
+          isImageFromUploadThingUrl
+            ? "border-green-200 bg-green-50"
+            : "border-amber-200 bg-amber-50"
+        )}
+      >
+        <CardContent>
+          {isImage ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div
+                  className={cn(
+                    "px-2 py-1 rounded-full text-xs border font-medium flex items-center space-x-1 w-fit",
+                    isImageFromUploadThingUrl
+                      ? "bg-green-200 text-green-800 border-green-800"
+                      : "bg-amber-200 text-amber-800 border-amber-800"
+                  )}
+                >
+                  {isImageFromUploadThingUrl ? (
+                    <ImageIcon className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                  <span>
+                    {isImageFromUploadThingUrl ? "Gambar saat ini" : "Preview"}
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={removeFile}
+                  disabled={disabled}
+                  className="h-7 text-xs"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  Hapus Gambar
+                </Button>
+              </div>
+              <div className="relative aspect-video rounded-lg overflow-hidden bg-white">
+                <Image
+                  src={currentFileUrl || "/placeholder.svg"}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                  fill
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      "/placeholder.svg?height=200&width=300";
+                  }}
+                />
               </div>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setError(null);
-                onFileSelect(null); // Reset file selection
-              }}
-            >
-              Pilih Ulang
-            </Button>
-          </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <File className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-green-700">
+                    File tersimpan
+                  </p>
+                  <p className="text-xs text-green-600">
+                    {getFileName(currentFileUrl)}
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={removeFile}
+                disabled={disabled}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
