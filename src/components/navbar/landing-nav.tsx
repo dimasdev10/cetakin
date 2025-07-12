@@ -1,12 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
 
+import UserAvatar from "@/components/navbar/user-avatar";
 import MobileSidebar from "@/components/navbar/mobile-sidebar";
 import { LandingNavItem } from "@/components/navbar/landing-nav-item";
 
 import { cn } from "@/lib/utils";
 import { getCurrentUser } from "@/actions/current-user";
-import UserAvatar from "./user-avatar";
 
 export async function LandingNavbar() {
   const user = await getCurrentUser();
