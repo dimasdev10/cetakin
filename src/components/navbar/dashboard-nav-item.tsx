@@ -25,6 +25,7 @@ interface NavbarItemProps {
 }
 
 const navLinks = [
+  { name: "Home", path: "/" },
   { name: "Pelanggan", path: "/dashboard/users" },
   { name: "Paket", path: "/dashboard/packages" },
   { name: "Pesanan", path: "/dashboard/orders" },
@@ -38,7 +39,10 @@ export default function DashboardNavItem({
   const pathname = usePathname();
 
   const isActive = (path: string) => {
-    return pathname === path;
+    if (path === "/") {
+      return pathname === "/";
+    }
+    return pathname.startsWith(path);
   };
 
   return (

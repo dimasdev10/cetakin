@@ -6,6 +6,16 @@ import { getCurrentUser } from "@/actions/current-user";
 import { PackageTable } from "@/components/tables/columns/package-columns";
 import { PackageFormInput, packageFormSchema } from "@/lib/validations/package";
 
+export async function getListPackagesOverview() {
+  return await prisma.package.findMany({
+    where: { deletedAt: null },
+    include: {
+      requiredFields: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function getAllPackageTable(): Promise<PackageTable[]> {
   try {
     const currentUser = await getCurrentUser();
