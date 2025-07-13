@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { PaymentStatus } from "@prisma/client";
-import { updateOrderStatus } from "@/actions/order";
+import { updatePaymentStatus } from "@/actions/order";
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       paymentStatus = PaymentStatus.PENDING;
     }
 
-    await updateOrderStatus(orderId, paymentStatus);
+    await updatePaymentStatus(orderId, paymentStatus);
 
     return NextResponse.json({ status: "ok" }, { status: 200 });
   } catch (error) {

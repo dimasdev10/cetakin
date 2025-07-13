@@ -1,7 +1,8 @@
 import { LandingNavbar } from "@/components/navbar/landing-nav";
 import { OrderHistoryTabs } from "@/components/order-history-tabs";
-import { PaymentStatus } from "@prisma/client";
+
 import { AlertCircle } from "lucide-react";
+import { PaymentStatus } from "@prisma/client";
 import { getUserOrders } from "@/actions/order";
 
 interface MyOrdersPageProps {
@@ -21,6 +22,7 @@ export default async function MyOrdersPage({
   const isValidStatus =
     statusFilter === "ALL" ||
     Object.values(PaymentStatus).includes(statusFilter as PaymentStatus);
+
   const finalStatusFilter = isValidStatus ? statusFilter : "ALL";
 
   const ordersResult = await getUserOrders({ status: finalStatusFilter });

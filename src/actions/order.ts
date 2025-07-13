@@ -1,11 +1,11 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { PaymentStatus } from "@prisma/client";
+import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { getCurrentUser } from "@/actions/current-user";
 import { OrderWithDetails } from "@/types/order";
+import { OrderTable } from "@/components/tables/columns/order-columns";
 
-// Definisi tipe untuk detail file yang sudah diupload
 interface UploadedFileDetail {
   fieldName: string;
   fileName: string;
@@ -15,6 +15,68 @@ interface UploadedFileDetail {
 
 interface GetUserOrdersOptions {
   status?: PaymentStatus | "ALL";
+}
+
+interface GetAllOrdersForAdminOptions {
+  orderStatus?: OrderStatus;
+}
+
+export async function getAllOrderTable({
+  orderStatus = OrderStatus.REQUESTED,
+}: GetAllOrdersForAdminOptions): Promise<OrderTable[] | { error: string }> {
+  try {
+    const currentUser = await getCurrentUser();
+
+    if (!currentUser || currentUser.role !== "ADMIN") {
+      return { error: "Unauthorized" };
+    }
+
+    const whereClause: { orderStatus?: OrderStatus } = {};
+
+    whereClause.orderStatus = orderStatus;
+
+    const orders = await prisma.order.findMany({
+      where: {
+        ...whereClause,
+        paymentStatus: PaymentStatus.PAID,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        totalAmount: true,
+        createdAt: true,
+        paymentStatus: true,
+        orderStatus: true,
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        package: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    const formattedOrders = orders.map((order) => ({
+      orderId: order.id,
+      userName: order.user.name,
+      packageName: order.package.name,
+      totalAmount: Number(order.totalAmount),
+      paymentStatus: order.paymentStatus,
+      orderStatus: order.orderStatus,
+      createdAt: order.createdAt.toISOString(),
+    }));
+
+    return formattedOrders;
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    return { error: "Terjadi kesalahan saat mengambil data" };
+  }
 }
 
 export async function getUserOrders({
@@ -234,7 +296,7 @@ export async function reInitiatePaymentForOrder(orderId: string) {
   }
 }
 
-export async function updateOrderStatus(
+export async function updatePaymentStatus(
   orderId: string,
   paymentStatus: PaymentStatus
 ) {
@@ -250,5 +312,24 @@ export async function updateOrderStatus(
   } catch (error) {
     console.error(`Error updating order status for ${orderId}:`, error);
     return { error: "Failed to update order status." };
+  }
+}
+
+export async function updateOrderStatus(
+  orderId: string,
+  orderStatus: OrderStatus
+) {
+  try {
+    const order = await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        orderStatus,
+        updatedAt: new Date(),
+      },
+    });
+    return { success: true, order };
+  } catch (error) {
+    console.error(`Error updating order status for ${orderId}:`, error);
+    return { error: "Gagal memperbarui status pesanan" };
   }
 }
