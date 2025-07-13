@@ -77,8 +77,11 @@ export function LandingNavItem({ user }: NavbarItemProps) {
             <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem asChild>
-                <Link href={"/dashboard/profile"}>Profil</Link>
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href={"/profile"}>Profil</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href={"/my-orders"}>Pesanan Saya</Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => signOut()}

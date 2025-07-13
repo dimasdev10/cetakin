@@ -108,13 +108,13 @@ export function OrderPageClient({ pkg, onSubmitAction }: OrderPageClientProps) {
                 toast.success("Pembayaran Berhasil!", {
                   description: "Pesanan Anda telah berhasil dibayar.",
                 });
-                window.location.replace(`/my-orders?status=paid`);
+                window.location.replace(`/my-orders?status=PAID`);
               },
               onPending: () => {
                 toast.info("Pembayaran Tertunda", {
                   description: "Pembayaran anda sedang menunggu konfirmasi.",
                 });
-                window.location.replace("/my-orders?status=pending");
+                window.location.replace("/my-orders?status=PENDING");
               },
               onError: () => {
                 toast.error("Pembayaran Gagal", {
@@ -126,7 +126,7 @@ export function OrderPageClient({ pkg, onSubmitAction }: OrderPageClientProps) {
                 toast.warning("Pembayaran Ditunda", {
                   description: "Pembayaran anda sedang menunggu konfirmasi.",
                 });
-                window.location.replace("/my-orders?status=pending");
+                window.location.replace("/my-orders?status=PENDING");
               },
             });
           } catch (error) {
