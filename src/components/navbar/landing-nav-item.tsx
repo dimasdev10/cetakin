@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-import { signOut } from "@/lib/auth";
+import { signOut } from "next-auth/react";
 import { ExtendedSession } from "@/types/next-auth";
 
 interface NavbarItemProps {
@@ -40,12 +40,12 @@ export function LandingNavItem({ user }: NavbarItemProps) {
           {link.name}
         </Link>
       ))}
-      {user.role === "ADMIN" && (
+      {user && user.role === "ADMIN" && (
         <Button asChild size="sm" className="ml-4">
           <Link href="/dashboard/users">Dashboard</Link>
         </Button>
       )}
-      {user.id ? (
+      {user && user.id ? (
         <DropdownMenu>
           <DropdownMenuTrigger
             asChild
@@ -94,7 +94,7 @@ export function LandingNavItem({ user }: NavbarItemProps) {
         </DropdownMenu>
       ) : (
         <Button asChild size="sm" className="ml-4">
-          <Link href="/auth/signin">Masuk</Link>
+          <Link href="/auth/sign-in">Masuk</Link>
         </Button>
       )}
     </nav>

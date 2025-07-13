@@ -7,6 +7,7 @@ import { LandingNavItem } from "@/components/navbar/landing-nav-item";
 
 import { cn } from "@/lib/utils";
 import { getCurrentUser } from "@/actions/current-user";
+import { Button } from "../ui/button";
 
 export async function LandingNavbar() {
   const user = await getCurrentUser();
@@ -40,10 +41,8 @@ export async function LandingNavbar() {
           {user ? (
             <UserAvatar image={user.image!} email={user.email!} />
           ) : (
-            <Link href="/auth/login">
-              <button className="px-4 py-2 text-sm font-semibold text-primary bg-secondary rounded-md hover:bg-secondary/80 transition-colors">
-                Masuk
-              </button>
+            <Link href="/auth/sign-in">
+              <Button size="sm">Masuk</Button>
             </Link>
           )}
           <MobileSidebar user={user!} />

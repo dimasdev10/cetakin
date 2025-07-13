@@ -97,8 +97,13 @@ const MobileSidebar = ({ user }: MobileSidebarProps) => {
         <SheetHeader>
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
-        <div className="p-4 pt-0">
-          {user.role === "ADMIN" && (
+        <div className="flex flex-col gap-2.5 p-4 pt-0">
+          {navigationMenu.map((item) => (
+            <NavigationMenu key={item.name} item={item} level={0} />
+          ))}
+        </div>
+        <div className="p-4 pt-2">
+          {user && user.role === "ADMIN" && (
             <Button asChild size="sm" className="w-full">
               <Link href="/dashboard/users">
                 Dashboard
@@ -106,11 +111,6 @@ const MobileSidebar = ({ user }: MobileSidebarProps) => {
               </Link>
             </Button>
           )}
-        </div>
-        <div className="flex flex-col gap-2.5 p-4 pt-0">
-          {navigationMenu.map((item) => (
-            <NavigationMenu key={item.name} item={item} level={0} />
-          ))}
         </div>
       </SheetContent>
     </Sheet>
