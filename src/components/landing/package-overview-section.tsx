@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+import { Package2 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { getListPackagesOverview } from "@/actions/package";
-import { Package2 } from "lucide-react";
 
 export async function PackagesOverviewSection() {
   const packages = await getListPackagesOverview();

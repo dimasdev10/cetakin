@@ -9,6 +9,7 @@ import { LandingNavbar } from "@/components/navbar/landing-nav";
 import { formatPrice } from "@/lib/utils";
 import { getPackage } from "@/actions/package";
 import { CheckCircle, FileText, ArrowLeft } from "lucide-react";
+import { getCurrentUser } from "@/actions/current-user";
 
 interface PackageDetailPageProps {
   params: {
@@ -19,6 +20,7 @@ interface PackageDetailPageProps {
 export default async function PackageDetailPage({
   params,
 }: PackageDetailPageProps) {
+  const user = await getCurrentUser();
   const pkg = await getPackage(params.id);
 
   if (!pkg) {
@@ -36,7 +38,7 @@ export default async function PackageDetailPage({
               Kembali ke Paket
             </Link>
           </Button>
-          <Card className="shadow-xl overflow-hidden rounded-xl py-0">
+          <Card className="overflow-hidden rounded-xl py-0 shadow-none">
             <div className="grid md:grid-cols-2 gap-0">
               {/* Image Section */}
               <div className="relative aspect-video md:aspect-[4/3] bg-gray-100">
@@ -85,7 +87,10 @@ export default async function PackageDetailPage({
                   </ul>
                 </div>
 
-                <Link href={`/packages/${pkg.id}/order`} className="mt-auto">
+                <Link
+                  href={user ? `/packages/${pkg.id}/order` : "/auth/sign-in"}
+                  className="mt-auto"
+                >
                   <Button className="w-full">Pilih Paket Ini</Button>
                 </Link>
               </div>
