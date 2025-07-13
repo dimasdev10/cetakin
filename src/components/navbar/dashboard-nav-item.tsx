@@ -89,8 +89,8 @@ export default function DashboardNavItem({
           <DropdownMenuLabel>{email}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem asChild>
-              <Link href={"/dashboard/profile"}>Profil</Link>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href={"/profile"}>Profil</Link>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => signOut()}

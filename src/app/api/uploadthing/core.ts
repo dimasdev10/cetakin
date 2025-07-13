@@ -12,7 +12,6 @@ const handleAuth = async () => {
 };
 
 export const ourFileRouter = {
-  // Package images - untuk admin
   packageImage: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
     .middleware(() => handleAuth())
     .onUploadComplete(async ({ metadata, file }) => {
@@ -20,19 +19,25 @@ export const ourFileRouter = {
         "Package image upload completed for userId:",
         metadata.userId
       );
-      console.log("File URL:", file.url);
+      console.log("File URL:", file.ufsUrl);
       return { uploadedBy: metadata.userId };
     }),
 
-  // Document files - untuk user upload dokumen
   documentFile: f({
-    image: { maxFileSize: "8MB", maxFileCount: 1 },
-    pdf: { maxFileSize: "8MB", maxFileCount: 1 },
+    image: { maxFileSize: "4MB", maxFileCount: 1 },
+    pdf: { maxFileSize: "4MB", maxFileCount: 1 },
   })
     .middleware(() => handleAuth())
     .onUploadComplete(async ({ metadata, file }) => {
       console.log("Document upload completed for userId:", metadata.userId);
-      console.log("File URL:", file.url);
+      console.log("File URL:", file.ufsUrl);
+      return { uploadedBy: metadata.userId };
+    }),
+
+  profileImage: f({ image: { maxFileSize: "2MB", maxFileCount: 1 } })
+    .middleware(() => handleAuth())
+    .onUploadComplete(async ({ metadata, file }) => {
+      console.log("File URL:", file.ufsUrl);
       return { uploadedBy: metadata.userId };
     }),
 } satisfies FileRouter;

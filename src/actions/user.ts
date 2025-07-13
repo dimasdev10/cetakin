@@ -2,8 +2,10 @@
 
 import { format } from "date-fns";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/actions/current-user";
 import { UserTable } from "@/components/tables/columns/user-columns";
+import { ProfileFormInput, profileFormSchema } from "@/lib/validations/user";
 
 export async function getAllUserTable(): Promise<UserTable[]> {
   try {
@@ -66,5 +68,68 @@ export async function deleteUser(
   } catch (error) {
     console.error("Error deleting user:", error);
     return { error: "Terjadi kesalahan" };
+  }
+}
+
+export async function updateUserProfile(data: ProfileFormInput) {
+  try {
+    const user = await getCurrentUser();
+
+    if (!user || !user?.id) {
+      return { error: "Unauthorized" };
+    }
+
+    const validatedData = profileFormSchema.safeParse(data);
+
+    if (!validatedData.success) {
+      return {
+        error: "Data tidak valid",
+        details: validatedData.error.flatten().fieldErrors,
+      };
+    }
+
+    const { name, email, phone, address, image } = validatedData.data;
+
+    // Cek apakah email sudah digunakan oleh user lain
+    const existingUserWithEmail = await prisma.user.findUnique({
+      where: { email: email },
+      select: { id: true },
+    });
+
+    if (existingUserWithEmail && existingUserWithEmail.id !== user.id) {
+      return { error: "Email sudah digunakan oleh akun lain." };
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        name,
+        email,
+        phone: phone || null,
+        address: address || null,
+        image: image || null,
+        updatedAt: new Date(),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        address: true,
+        image: true,
+        role: true,
+      },
+    });
+
+    revalidatePath("/profile"); // Revalidate halaman profil
+    revalidatePath("/dashboard"); // Revalidate dashboard jika menampilkan info user
+    revalidatePath("/"); // Revalidate homepage jika navbar menampilkan info user
+
+    return { success: true, data: updatedUser };
+  } catch (error) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+    return { error: "Terjadi kesalahan saat memperbarui profil." };
   }
 }
