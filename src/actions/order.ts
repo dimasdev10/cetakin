@@ -5,6 +5,7 @@ import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { getCurrentUser } from "@/actions/current-user";
 import { OrderWithDetails } from "@/types/order";
 import { OrderTable } from "@/components/tables/columns/order-columns";
+import { sendOrderUpdateEmail } from "@/lib/mail";
 
 interface UploadedFileDetail {
   fieldName: string;
@@ -327,6 +328,22 @@ export async function updateOrderStatus(
         updatedAt: new Date(),
       },
     });
+
+    if (!order) {
+      return { error: "Pesanan tidak ditemukan" };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: order.userId },
+      select: { name: true, email: true },
+    });
+
+    if (!user) {
+      return { error: "Pengguna tidak ditemukan" };
+    }
+
+    await sendOrderUpdateEmail(user?.email, order.id, user?.name, orderStatus);
+
     return { success: true, order };
   } catch (error) {
     console.error(`Error updating order status for ${orderId}:`, error);
