@@ -6,15 +6,16 @@ import { PaymentStatus } from "@prisma/client";
 import { getUserOrders } from "@/actions/order";
 
 interface MyOrdersPageProps {
-  searchParams: {
+  searchParams: Promise<{
     status?: string;
-  };
+  }>;
 }
 
 export default async function MyOrdersPage({
   searchParams,
 }: MyOrdersPageProps) {
-  const statusFilter = searchParams.status?.toUpperCase() as
+  const { status } = await searchParams;
+  const statusFilter = status?.toUpperCase() as
     | PaymentStatus
     | "ALL"
     | undefined;
