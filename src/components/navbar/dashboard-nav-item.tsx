@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 
 import { cn } from "@/lib/utils";
 import { signOut } from "next-auth/react";
@@ -79,7 +79,6 @@ export default function DashboardNavItem({
                 alt={name}
                 className="border-2 border-primary object-cover rounded-full"
               />
-              <AvatarFallback>{name.charAt(0)}</AvatarFallback>
             </Avatar>
             <span className="text-sm font-medium text-primary">{name}</span>
           </Button>

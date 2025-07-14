@@ -27,3 +27,13 @@ export const formatRupiah = (value: number): string => {
 export const parseRupiah = (value: string): number => {
   return parseInt(value.replace(/[^\d]/g, ""), 10) || 0;
 };
+
+export function formatFileSize(bytes: number) {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return (
+    Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+  );
+}

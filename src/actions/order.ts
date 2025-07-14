@@ -120,6 +120,55 @@ export async function getUserOrders({
   }
 }
 
+export async function getOrderDetails(id: string) {
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        totalAmount: true,
+        paymentStatus: true,
+        orderStatus: true,
+        formData: true,
+        createdAt: true,
+        package: {
+          select: {
+            name: true,
+            requiredFields: {
+              select: {
+                id: true,
+                fieldName: true,
+                fieldLabel: true,
+                fieldType: true,
+              },
+            },
+          },
+        },
+        files: {
+          select: {
+            id: true,
+            fieldName: true,
+            fileName: true,
+            fileUrl: true,
+            fileSize: true,
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            phone: true,
+            email: true,
+          },
+        },
+      },
+    });
+    return order;
+  } catch (error) {
+    console.error("Error fetching order details for admin:", error);
+    return null;
+  }
+}
+
 export async function createOrderAndInitiatePayment(
   packageId: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
