@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useTransition } from "react";
 
 import {
@@ -106,12 +105,6 @@ const SigninForm = () => {
                   </FormItem>
                 )}
               />
-              <Link
-                href="/auth/forgot-password"
-                className="text-sm hover:underline text-brand-700"
-              >
-                Lupa Password?
-              </Link>
             </div>
             <Button
               className="flex items-center justify-center mt-2 border border-y-0"
