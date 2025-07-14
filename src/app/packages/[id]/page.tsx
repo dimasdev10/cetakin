@@ -11,17 +11,21 @@ import { getPackage } from "@/actions/package";
 import { CheckCircle, FileText, ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/actions/current-user";
 
+export const dynamic = "force-dynamic";
+
 interface PackageDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function PackageDetailPage({
   params,
 }: PackageDetailPageProps) {
+  const { id } = await params;
+
   const user = await getCurrentUser();
-  const pkg = await getPackage(params.id);
+  const pkg = await getPackage(id);
 
   if (!pkg) {
     notFound();

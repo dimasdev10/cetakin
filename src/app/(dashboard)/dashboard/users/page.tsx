@@ -3,6 +3,8 @@ import { columns } from "@/components/tables/columns/user-columns";
 
 import { getAllUserTable } from "@/actions/user";
 
+export const dynamic = "force-dynamic";
+
 const DashboardUsersPage = async () => {
   const users = await getAllUserTable();
 
